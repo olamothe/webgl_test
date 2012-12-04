@@ -1,3 +1,7 @@
+/*
+Olivier Lamothe
+November 2012
+*/
 if (typeof GAME == "undefined"){
 	GAME = {}
 }
@@ -12,13 +16,7 @@ GAME.EngineParticles = function(spaceship , material , boundary , nbParticles){
 			color : 0xe00f00 ,
 			size : 2
 		})
-
-	this.boundaries = [
-		new THREE.Vector3(-boundary,-boundary,-boundary) , 
-		new THREE.Vector3(boundary,-boundary,-boundary),
-		new THREE.Vector3(-boundary,-boundary,boundary),
-		new THREE.Vector3(boundary,-boundary,boundary)
-	]
+	this.boundary = boundary
 
 	this.nbParticles = nbParticles;
 	this.nbAnimatedParticles = 0;
@@ -57,14 +55,14 @@ GAME.EngineParticles.prototype = {
 
 	engineFiring : function(){
 		//ship is accelerating : add new particle to animation
-		for(var i = 0 ; i < 15 ; i++){
+		for(var i = 0 ; i < 30 ; i++){
 		var particle = this.findFirstParticle();
 		this.setParticleStart(particle)
 		}
 	},
 
 	setParticleStart : function(particle){
-		var engineParticlePos = Math.random() > .5 ? 1 : -1 , 
+		var engineParticlePos = Math.random() > .5 ? 1 : -1 ,
 		resetPoint = new THREE.Vector3(5 * engineParticlePos,-40,0),
 		resetVelocity = new THREE.Vector3(Math.random() -.5 , - Math.random()-1 , Math.random() -.5),
 		rotationMatrix = new THREE.Matrix4();
@@ -76,32 +74,10 @@ GAME.EngineParticles.prototype = {
 		particle.inAnimation = true;
 	},
 	checkParticleBoundary : function(particle){
-		var needReset = false;
-		for(var i = 0 , l = this.boundaries.length ; i < l ; i++ ){
-			var boundLocal = this.boundaries[i]
-			var boundWorld = this.spaceship.pivot.matrixWorld.multiplyVector3(boundLocal)
-			if(boundLocal.x < 0 && particle.x < boundWorld.x){
-				needReset = true;
-			}
-			if(boundLocal.x > 0 && particle.x > boundWorld.x){
-				needReset = true;
-			}
-			if(boundLocal.y < 0 && particle.y < boundWorld.y){
-				needReset = true;
-			}
-			if(boundLocal.y > 0 && particle.y > boundWorld.y){
-				needReset = true;
-			}
-			if(boundLocal.z < 0 && particle.z < boundWorld.z){
-				needReset = true;
-			}
-			if(boundLocal.z > 0 && particle.z > boundWorld.z){
-				needReset = true;
-			}
-			if(needReset){
-				this.resetParticle(particle)
-				return
-			}
+		//should change to time clock for each particle, stop animating particle after X delta time ???
+		var particleLocal = this.spaceship.pivot.worldToLocal(particle.clone())
+		if(particleLocal.y < - this.boundary || particleLocal.y > 0){
+			this.resetParticle(particle)
 		}
 	},
 	resetParticle : function(particle){

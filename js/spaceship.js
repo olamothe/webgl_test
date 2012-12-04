@@ -1,3 +1,7 @@
+/*
+Olivier Lamothe
+November 2012
+*/
 if( typeof GAME == 'undefined'){
 	GAME = {}
 }
@@ -78,7 +82,7 @@ GAME.Spaceship.prototype = {
 
 	rotate : function(angle , axis){
 		var rotationMatrix = new THREE.Matrix4();
-		rotationMatrix.makeRotationAxis(axis.normalize() , angle * (Math.PI/180))
+		rotationMatrix.makeRotationAxis(axis.normalize() , angle * this.turnSpeed * (Math.PI/180))
 		this.pivot.matrix.multiplySelf(rotationMatrix)
 		this.pivot.rotation.setEulerFromRotationMatrix(this.pivot.matrix)
 		this.pivot.matrixWorldNeedsUpdate = true

@@ -1,3 +1,7 @@
+/*
+Olivier Lamothe
+November 2012
+*/
 $().ready(function(){
 	if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
@@ -11,7 +15,7 @@ $().ready(function(){
 	var camera, controls, scene, renderer;
 
 	var spaceship , spaceshipPivot ,  fireParticlesSystemRed , fireParticlesSystemOrange , fireParticlesVelocityPivot;
-	var FIREPARTICLENUMBER = 1000 , SHIP_TURN_SPEED = 2 , SHIP_MAX_SPEED = .3 , SHIP_ACCELERATION = .01;
+	var FIREPARTICLENUMBER = 1000 , SHIP_TURN_SPEED = 5 , SHIP_MAX_SPEED = 1 , SHIP_ACCELERATION = .01;
 
 	var keysPressed = {} ;
 
@@ -35,22 +39,12 @@ $().ready(function(){
 		container = document.getElementById( 'container' );
 		container.appendChild( renderer.domElement );
 
-		//camera
-		camera = new THREE.PerspectiveCamera( FOV , WIDTH / HEIGHT , NEAR_FRUSTRUM , FAR_FRUSTRUM);
-		camera.position.z = 300
+		
+		/*camera = new THREE.PerspectiveCamera( );
+		camera.position = new THREE.Vector3(0,-125,-125)
+		camera.lookAt(new THREE.Vector3(0,0,0))*/
 
-		//camera controls
-		controls = new THREE.TrackballControls( camera );
-
-		controls.rotateSpeed = 2.0;
-		controls.zoomSpeed = .09;
-		controls.panSpeed = 0.8;
-
-		controls.noZoom = false;
-		controls.noPan = false;
-
-		controls.staticMoving = true;
-		controls.dynamicDampingFactor = 0.3;
+		
 
 		//$(controls).on('change', $.proxy( render , this) );
 
@@ -100,12 +94,12 @@ $().ready(function(){
 		fireParticlesSystemRed = new GAME.EngineParticles(
 			spaceship , 
 			fireMaterialRed , 
-			50 , //boundary values for particle system
+			200 , //boundary values for particle system
 			FIREPARTICLENUMBER)
 		fireParticlesSystemOrange = new GAME.EngineParticles(
 			spaceship , 
 			fireMaterialOrange , 
-			50 , //boundary values
+			200 , //boundary values
 			FIREPARTICLENUMBER)
 
 		scene.add(fireParticlesSystemRed.particleSystem)
@@ -135,6 +129,21 @@ $().ready(function(){
 			)
 			scene.add(planeZ)//flat with z
 		}
+		//camera
+		camera = new GAME.Camera(FOV , WIDTH / HEIGHT , NEAR_FRUSTRUM , FAR_FRUSTRUM , spaceship , 45 , 150)
+
+		//camera controls
+		controls = new THREE.TrackballControls( camera.camera );
+
+		controls.rotateSpeed = 2.0;
+		controls.zoomSpeed = .09;
+		controls.panSpeed = 0.8;
+
+		controls.noZoom = false;
+		controls.noPan = false;
+
+		controls.staticMoving = true;
+		controls.dynamicDampingFactor = 0.3;
 		
 	}
 	function keyUp (e){
@@ -144,10 +153,6 @@ $().ready(function(){
 		keysPressed[e.which] = true;
 		if(rotationKeyIsPressed()){
 			rotation()
-			e.preventDefault()
-		}
-		if(movementKeyIsPressed()){
-			movement()
 			e.preventDefault()
 		}
 	}
@@ -164,56 +169,60 @@ $().ready(function(){
 		var angle = 0 , rotationAxis = 0 , rotationMatrix = new THREE.Matrix4();
 		if(keysPressed[KEY_LEFT]){
 			rotationAxis = new THREE.Vector3(0,0,1);
-			angle =  2 ;
+			angle =  1 ;
 		}
 		if(keysPressed[KEY_RIGHT]){
 			rotationAxis = new THREE.Vector3(0,0,1);
-			angle = -2 ;
+			angle = -1 ;
 		}
 		if(keysPressed[KEY_UP]){
 			rotationAxis = new THREE.Vector3(1,0,0)
-			angle = - 2
+			angle = - 1
 		}
 		if(keysPressed[KEY_DOWN]){
 			rotationAxis = new THREE.Vector3(1,0,0)
-			angle =  2
+			angle =  1
 		}
 		if(keysPressed[KEY_ROLL_RIGHT]){
 			rotationAxis = new THREE.Vector3(0,1,0)
-			angle = -2;
+			angle = -1;
 		}
 		if(keysPressed[KEY_ROLL_LEFT]){
 			rotationAxis = new THREE.Vector3(0,1,0)
-			angle = 2;
+			angle = 1;
 		}
 		spaceship.rotate(angle , rotationAxis)
 	}
 	function movement(){
-		if(keysPressed[KEY_FORWARD]){
-			spaceship.accelerate()
+		if(movementKeyIsPressed()){
+			if(keysPressed[KEY_FORWARD]){
+				spaceship.accelerate()
+			}
+			if(keysPressed[KEY_BACKWARD]){
+				spaceship.deccelerate()
+			}
+			fireParticlesSystemOrange.engineFiring()
+			fireParticlesSystemRed.engineFiring()
 		}
-		if(keysPressed[KEY_BACKWARD]){
-			spaceship.deccelerate()
-		}
-		fireParticlesSystemOrange.engineFiring()
-		fireParticlesSystemRed.engineFiring()
 	}
 
 	function animate() {
 
 		requestAnimationFrame( animate );
 		spaceship.update();
+		movement()
 		fireParticlesSystemRed.update();
 		fireParticlesSystemOrange.update();
 		stats.update();
 		controls.update()
+		camera.update()
 		render();
 
 	}
 
 	function render() {
 
-		renderer.render( scene, camera );
+		renderer.render( scene, camera.camera );
 
 	}
 })

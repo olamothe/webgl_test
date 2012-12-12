@@ -6,7 +6,7 @@ if (typeof GAME == "undefined"){
 	GAME = {}
 }
 
-GAME.EngineParticles = function(spaceship , material , boundary , nbParticles){
+GAME.EngineParticles = function(spaceship , material , boundary , nbParticles , maxLiveTime){
 	this.spaceship = spaceship
 	if(! this.spaceship instanceof GAME.Spaceship) 
 		throw new Exception("Spaceship needs to be an instance of GAME.Spaceship")
@@ -20,6 +20,7 @@ GAME.EngineParticles = function(spaceship , material , boundary , nbParticles){
 
 	this.nbParticles = nbParticles;
 	this.nbAnimatedParticles = 0;
+	this.maxLiveTime = maxLiveTime
 
 	var particles = new THREE.Geometry();
 	for(var i = 0 ; i < nbParticles ; i ++){
@@ -37,6 +38,7 @@ GAME.EngineParticles = function(spaceship , material , boundary , nbParticles){
 GAME.EngineParticles.prototype = {
 	constructor : GAME.EngineParticles,
 	update : function(){
+		var now = Date.now()
 		//update all particles in animation
 		for(var i = 0 ; i < this.nbParticles ; i++){
 			var particle = this.particleSystem.geometry.vertices[i]
@@ -44,7 +46,7 @@ GAME.EngineParticles.prototype = {
 				particle.x += particle.velocity.x
 				particle.y += particle.velocity.y
 				particle.z += particle.velocity.z
-				this.checkParticleBoundary(particle)
+				this.checkParticleBoundary(particle , now)
 			}
 			else{
 				this.resetParticle(particle)
@@ -55,10 +57,8 @@ GAME.EngineParticles.prototype = {
 
 	engineFiring : function(){
 		//ship is accelerating : add new particle to animation
-		for(var i = 0 ; i < 30 ; i++){
 		var particle = this.findFirstParticle();
 		this.setParticleStart(particle)
-		}
 	},
 
 	setParticleStart : function(particle){
@@ -72,19 +72,25 @@ GAME.EngineParticles.prototype = {
 		particle.x = resetPoint.x
 		particle.z = resetPoint.z
 		particle.inAnimation = true;
+		particle.startTime = Date.now();
 	},
-	checkParticleBoundary : function(particle){
+	checkParticleBoundary : function(particle , now){
+		if(now - particle.startTime > this.maxLiveTime){
+			this.resetParticle(particle)
+		}
+		/*
 		//should change to time clock for each particle, stop animating particle after X delta time ???
 		var particleLocal = this.spaceship.pivot.worldToLocal(particle.clone())
 		if(particleLocal.y < - this.boundary || particleLocal.y > 0){
 			this.resetParticle(particle)
-		}
+		}*/
 	},
 	resetParticle : function(particle){
 		particle.inAnimation = false;
 		particle.x = 0
 		particle.y = 0
 		particle.z = 0 //position in the middle of the ship (local)
+		particle.startTime = 0;
 		particle = this.spaceship.pivot.matrixWorld.multiplyVector3(particle) //middle of the ship (world)
 
 	},

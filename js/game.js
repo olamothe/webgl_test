@@ -12,10 +12,10 @@ $().ready(function(){
 
 	var KEY_LEFT = 37 ,  KEY_UP = 38 ,  KEY_RIGHT = 39 , KEY_DOWN = 40 , KEY_ROLL_LEFT  = 81 , KEY_ROLL_RIGHT = 69 , KEY_FORWARD = 87 , KEY_BACKWARD = 83;
 
-	var camera, controls, scene, renderer;
+	var camera, controls, scene, renderer , clock;
 
 	var spaceship , spaceshipPivot ,  fireParticlesSystemRed , fireParticlesSystemOrange , fireParticlesVelocityPivot;
-	var FIREPARTICLENUMBER = 1000 , SHIP_TURN_SPEED = 5 , SHIP_MAX_SPEED = 1 , SHIP_ACCELERATION = .01;
+	var FIREPARTICLENUMBER = 500 , PARTICLE_LIVE_TIME = 2000 ,  SHIP_TURN_SPEED = 5 , SHIP_MAX_SPEED = .5 , SHIP_ACCELERATION = .01;
 
 	var keysPressed = {} ;
 
@@ -38,15 +38,6 @@ $().ready(function(){
 
 		container = document.getElementById( 'container' );
 		container.appendChild( renderer.domElement );
-
-		
-		/*camera = new THREE.PerspectiveCamera( );
-		camera.position = new THREE.Vector3(0,-125,-125)
-		camera.lookAt(new THREE.Vector3(0,0,0))*/
-
-		
-
-		//$(controls).on('change', $.proxy( render , this) );
 
 		// lights
 		light = new THREE.SpotLight( 0xf5e61b)
@@ -95,12 +86,14 @@ $().ready(function(){
 			spaceship , 
 			fireMaterialRed , 
 			200 , //boundary values for particle system
-			FIREPARTICLENUMBER)
+			FIREPARTICLENUMBER,
+			PARTICLE_LIVE_TIME)
 		fireParticlesSystemOrange = new GAME.EngineParticles(
 			spaceship , 
 			fireMaterialOrange , 
 			200 , //boundary values
-			FIREPARTICLENUMBER)
+			FIREPARTICLENUMBER,
+			PARTICLE_LIVE_TIME)
 
 		scene.add(fireParticlesSystemRed.particleSystem)
 		scene.add(fireParticlesSystemOrange.particleSystem)
